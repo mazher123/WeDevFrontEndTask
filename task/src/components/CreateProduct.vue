@@ -11,6 +11,7 @@
             type="text"
             placeholder="Title"
             class="form-control"
+            name="title"
             v-model="title"
           />
         </div>
@@ -19,6 +20,7 @@
             type="number"
             placeholder="Price"
             class="form-control"
+            name="price"
             v-model="price"
           />
         </div>
@@ -36,6 +38,7 @@
           <textarea
             class="form-control"
             v-model="description"
+            name="description"
             placeholder="Add product Description"
           >
           </textarea>
@@ -48,38 +51,116 @@
         </div>
       </div>
     </form>
+
+    <ProductData v-bind:products="products"  v-on:deleteData="deleteDatas"></ProductData>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import ProductData from "./ProductData";
+
 export default {
+  name: "createProduct",
+  components: {
+    ProductData,
+  },
   data() {
     return {
       title: "",
       description: "",
       price: "",
       image: "",
+
+      products:{}
     };
   },
-  props: {
-    msg: String,
-  },
 
+    mounted(){
+        this.loadData()
+
+    },
   methods: {
+
+      deleteDatas(id){
+           let token = localStorage.getItem("token");
+          axios
+            .delete("http://localhost:8000/api/product/" + id, {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + token,
+              },
+            })
+            .then((response) => {
+            this.$swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: "Your Product Deleted Successfully",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+               this.loadData();
+            })
+            .catch((e) => {});
+
+      },
+
+     loadData(){
+        let token = localStorage.getItem("token");
+          axios
+            .get("http://localhost:8000/api/product", {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + token,
+              },
+            })
+            .then((response) => {
+             
+              this.products = response.data.data;
+            })
+            .catch((e) => {});
+
+             console.log( this.products);
+     } ,
     createProduct() {
       let token = localStorage.getItem("token");
 
-      axios.post("http://localhost:8000/api/product", data, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        },
-      }).then(response=>{
+      let formdata = new FormData();
+      formdata.append("image", this.image);
+      formdata.append("title", this.title);
+      formdata.append("price", this.price);
+      formdata.append("description", this.description);
 
-      }).catch(e=>{
-          
-      })
+      axios
+        .post("http://localhost:8000/api/product", formdata, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+        })
+        .then((response) => {
+          console.log(response);
+
+          this.$swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: "Your Product has been saved",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+
+          this.title = "";
+          this.description = "";
+          this.price = "";
+          this.image = "";
+
+          this.loadData();
+
+     
+        })
+        .catch((e) => {
+          console.log(e);
+        });
     },
   },
 };

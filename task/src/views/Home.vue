@@ -1,25 +1,26 @@
 <template>
   <div class="container">
-  <CreateProduct/>
-    
+    <ProductInformation />
   </div>
 </template>
 
 <script>
-
-import CreateProduct from"@/components/CreateProduct"
+import ProductInformation from "@/components/CreateProduct";
 
 export default {
-
+  name: "home",
   components: {
-    CreateProduct,
+    ProductInformation,
   },
   data() {
-    return {};
+    return {
+      data: "cvxcv",
+    };
   },
-
-  mounted() {
-  
+  methiods: {
+    toggleFavouriteStatus(value) {
+      console.log(value);
+    },
   },
 };
 </script>
